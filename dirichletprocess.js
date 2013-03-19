@@ -22,23 +22,23 @@ function ClusterDistribution(inference,pdf){
 	this.pdf = function(point){return pdf(point,this.parameters)};
 }
 
-ClusterDistribution.prototype.add(point){
+ClusterDistribution.prototype.add = function(point){
 	this.data.push(point);
 	this.parameters = this.inference(this.data);
 }
 
-ClusterDistribution.prototype.remove(point){
+ClusterDistribution.prototype.remove = function(point){
 	data.pop($.inArray(point,data));
 	this.parameters = this.inference(this.data);
 }
 
-ClusterDistribution.prototype.size(){
+ClusterDistribution.prototype.size = function(){
 	return this.data.length;
 }
 
 
 function DirichletProcess(inference,pdf,alpha,data){
-	this.distribution = function(){return distribution(inference,pdf)};
+	this.distribution = function(){return ClusterDistribution(inference,pdf)};
 	this.alpha = alpha;
 	this.data = data;
 
@@ -49,11 +49,11 @@ function DirichletProcess(inference,pdf,alpha,data){
 	}
 }
 
-DirichletProcess.prototype.mixing(n){
+DirichletProcess.prototype.mixing = function(n){
 	return n / (this.alpha * this.data.length - 1);
 }
 
-DirichletProcess.prototype.sampleFrom(likelihoods,clusters){
+DirichletProcess.prototype.sampleFrom = function(likelihoods,clusters){
 	//assuming likelihoods has one more than clusters (likelihood for a new cluster)
 	var threshold = Math.random();
 	var total = 0;
@@ -67,13 +67,13 @@ DirichletProcess.prototype.sampleFrom(likelihoods,clusters){
 	return this.clusters[this.clusters.length - 1];
 }
 
-DirichletProcess.gibbsSample(iterations){
+DirichletProcess.gibbsSample = function(iterations){
 	for(var i = 0; i < iterations; i++){
 		this.gibbsStep();
 	}
 }
 
-DirichletProcess.gibbsStep(){
+DirichletProcess.gibbsStep = function(){
 	var remaining = [];
 	for(var i = 0; i < this.data.length; i++){
 		remaining.push(i);
