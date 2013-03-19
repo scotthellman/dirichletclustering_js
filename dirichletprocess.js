@@ -16,6 +16,34 @@ function uniformPDF(point,parameters){
 	}
 }
 
+function gaussianInference(data){
+	if(data.length == 0){
+		return [0,1];
+	}
+	if(data.length == 1){
+		return [data[0],0.1];
+	}
+
+	var mean = data[0];
+	var variance = 0;
+	var old_mean;
+
+	for(var i = 1; i < data.length; i++){
+		old_mean = mean;
+		mean = mean + (data[i] - mean)/(i+1);
+		variance = variance + (data[i] - mean)*(data[i] - old_mean);
+	}
+
+	variance /= data.length - 1;
+	return [mean,variance];
+}
+
+function gaussianPDF(point,parameters){
+	var result = 1 / Math.sqrt(2 * Math.PI * parameters[1]);
+	result *= Math.exp(-1 * Math.pow(point - parameters[0],2)/(2 * parameters[1]));
+	return result;
+}
+
 function ClusterDistribution(inference,pdf){
 	this.data = [];
 	this.parameters = inference([]);
@@ -52,7 +80,7 @@ function DirichletProcess(inference,pdf,alpha,data){
 }
 
 DirichletProcess.prototype.mixing = function(n){
-	return n / (this.alpha * this.data.length - 1);
+	return n / (this.alpha + this.data.length - 1);
 }
 
 DirichletProcess.prototype.sampleFrom = function(likelihoods,clusters){
@@ -89,7 +117,6 @@ DirichletProcess.prototype.gibbsStep = function(){
 		this.assignments[index] = null;
 		cluster.remove(point);
 
-		console.log(cluster.size());
 		if(cluster.size() == 0){
 			this.clusters.splice($.inArray(cluster,this.clusters),1);
 		}
@@ -97,7 +124,6 @@ DirichletProcess.prototype.gibbsStep = function(){
 		var likelihoods = this.clusters.map(function(cluster){
 			return cluster.pdf(point) * this.mixing(cluster.size());
 		},this);
-		console.log(likelihoods);
 		var new_likelihood = this.mixing(this.alpha); //TODO: no prior right now
 		likelihoods.push(new_likelihood);
 

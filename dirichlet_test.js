@@ -8,7 +8,7 @@ var matern_width = 1;
 
 $(function(){
 	$('#train').click(function(){
-		clusterer.gibbsSample(10);
+		clusterer.gibbsSample(1);
 		replot();
 	})
 	replot();
@@ -20,7 +20,9 @@ for(var i = 0; i < 10; i++){
 	data.push(Math.random() * 4 - 2);
 }
 
-var clusterer = new DirichletProcess(uniformInference,uniformPDF,0.01,data);
+
+
+var clusterer = new DirichletProcess(gaussianInference,gaussianPDF,0.01,data);
 
 function replot(){
 	console.log(data);
@@ -30,10 +32,21 @@ function replot(){
 	}
 	var plot_data = [ { data: prettied_data, lines: { show : false}, points: {show : true} }];
 	for(var i = 0; i < clusterer.clusters.length; i++){
-		var params = clusterer.clusters[i].parameters;
-		plot_data.push({data:[[params[0],1],[params[1],1]]});
+		console.log(clusterer.clusters[i].parameters)
+		plot_data.push({data:gaussianToPlot(clusterer.clusters[i],[-2,8])});
 	}
 	
 
     $.plot($("#placeholder"), plot_data); 
 }
+
+function gaussianToPlot(cluster,range){
+	var result = [];
+	for(var i = range[0]; i < range[1]; i += 0.1){
+		result.push([i,cluster.pdf(i)]);
+	}
+	return result;
+}
+
+
+console.log(gaussianInference([0,1]));
