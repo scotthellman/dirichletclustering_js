@@ -38,7 +38,7 @@ ClusterDistribution.prototype.size = function(){
 
 
 function DirichletProcess(inference,pdf,alpha,data){
-	this.distribution = function(){return ClusterDistribution(inference,pdf)};
+	this.distribution = function(){return new ClusterDistribution(inference,pdf)};
 	this.alpha = alpha;
 	this.data = data;
 
@@ -67,13 +67,13 @@ DirichletProcess.prototype.sampleFrom = function(likelihoods,clusters){
 	return this.clusters[this.clusters.length - 1];
 }
 
-DirichletProcess.gibbsSample = function(iterations){
+DirichletProcess.prototype.gibbsSample = function(iterations){
 	for(var i = 0; i < iterations; i++){
 		this.gibbsStep();
 	}
 }
 
-DirichletProcess.gibbsStep = function(){
+DirichletProcess.prototype.gibbsStep = function(){
 	var remaining = [];
 	for(var i = 0; i < this.data.length; i++){
 		remaining.push(i);
