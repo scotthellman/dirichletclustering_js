@@ -19,6 +19,7 @@ function uniformPDF(point,parameters){
 function ClusterDistribution(inference,pdf){
 	this.data = [];
 	this.parameters = inference([]);
+	this.inference = inference;
 	this.pdf = function(point){return pdf(point,this.parameters)};
 }
 
@@ -28,7 +29,7 @@ ClusterDistribution.prototype.add = function(point){
 }
 
 ClusterDistribution.prototype.remove = function(point){
-	data.pop($.inArray(point,data));
+	this.data.splice($.inArray(point,this.data),1);
 	this.parameters = this.inference(this.data);
 }
 
@@ -46,6 +47,7 @@ function DirichletProcess(inference,pdf,alpha,data){
 	this.assignments = [];
 	for(var i = 0; i < this.data.length; i++){
 		this.assignments.push(this.clusters[0]);
+		this.clusters[0].add(this.data[i]);
 	}
 }
 
@@ -63,7 +65,7 @@ DirichletProcess.prototype.sampleFrom = function(likelihoods,clusters){
 			return clusters[i];
 		}
 	}
-	this.clusters.append(this.distribution());
+	this.clusters.push(this.distribution());
 	return this.clusters[this.clusters.length - 1];
 }
 
@@ -87,11 +89,18 @@ DirichletProcess.prototype.gibbsStep = function(){
 		this.assignments[index] = null;
 		cluster.remove(point);
 
+		console.log(cluster.size());
 		if(cluster.size() == 0){
-			this.clusters.pop($.inArray(cluster,this.clusters));
+			console.log($.inArray(cluster,this.clusters));
+			this.clusters.splice($.inArray(cluster,this.clusters),1);
 		}
 
-		var likelihoods = this.getLikelihoods();
+		console.log(this.clusters);
+
+		var likelihoods = this.clusters.map(function(cluster){
+			return cluster.pdf(point) * this.mixing(cluster.size());
+		},this);
+		console.log(likelihoods);
 		var new_likelihood = this.mixing(this.alpha); //TODO: no prior right now
 		likelihoods.push(new_likelihood);
 
