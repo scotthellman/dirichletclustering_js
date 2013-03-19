@@ -91,11 +91,8 @@ DirichletProcess.prototype.gibbsStep = function(){
 
 		console.log(cluster.size());
 		if(cluster.size() == 0){
-			console.log($.inArray(cluster,this.clusters));
 			this.clusters.splice($.inArray(cluster,this.clusters),1);
 		}
-
-		console.log(this.clusters);
 
 		var likelihoods = this.clusters.map(function(cluster){
 			return cluster.pdf(point) * this.mixing(cluster.size());
@@ -105,7 +102,7 @@ DirichletProcess.prototype.gibbsStep = function(){
 		likelihoods.push(new_likelihood);
 
 		var sum = likelihoods.reduce(function(a,b){return a + b;},0);
-		var normalized_likelihoods = function(x){return x / sum;}.apply(null,likelihoods);
+		var normalized_likelihoods = likelihoods.map(function(x){return x / sum;});
 
 		var assignment = this.sampleFrom(normalized_likelihoods,this.clusters);
 		assignment.add(point);
